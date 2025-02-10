@@ -1,33 +1,63 @@
-from crewai import Task, Agent  # Import CrewAI Agent
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import AgentModel, TaskModel
+from crewai import Task
+from crew_ai_project.agents import AgentManager
 
-def convert_to_crewai_agent(agent_model):
-    """Convert an AgentModel instance into a CrewAI Agent."""
-    return Agent(
-        name=agent_model.name,
-        role=agent_model.role,
-        goal=agent_model.goal,
-        backstory=agent_model.backstory or "No backstory provided."
-    )
+class BaseTask:
+    """Base class for all CrewAI tasks."""
 
-def define_tasks():
-    db: Session = SessionLocal()
-    
-    agents = db.query(AgentModel).all()
-    tasks = []
+    def __init__(self, description, agent, expected_output):
+        self.description = description
+        self.agent = agent
+        self.expected_output = expected_output
 
-    for agent in agents:
-        agent_tasks = db.query(TaskModel).filter(TaskModel.agent_id == agent.id).all()
-        crew_agent = convert_to_crewai_agent(agent)  # ✅ Convert ORM Agent to CrewAI Agent
+    def create_task(self, output_handler=None):
+        """Creates a CrewAI task instance."""
+        return Task(
+            description=self.description,
+            agent=self.agent,
+            expected_output=self.expected_output,
+            output_handler=output_handler
+        )
 
-        for task in agent_tasks:
-            tasks.append(Task(
-                description=task.description,
-                agent=crew_agent,  # ✅ Assign a CrewAI agent, not an ORM object
-                expected_output=f"Completion of task: {task.description}"  # ✅ Fix: Add expected_output
-            ))
+class DataCollectionTask(BaseTask):
+    """Task for collecting IoT event logs."""
 
-    db.close()
-    return tasks
+    def __init__(self, agent):
+        super().__init__(
+            description="Collect IoT event logs from sensors.",
+            agent=agent,
+            expected_output="Raw IoT event data"
+        )
+
+class DataProcessingTask(BaseTask):
+    """Task for processing IoT event logs."""
+
+    def __init__(self, agent, previous_result):
+        super().__init__(
+            description=f"Process IoT data: {previous_result}",
+            agent=agent,
+            expected_output="Insights from IoT logs"
+        )
+
+class TaskManager:
+    """Manages task creation and execution."""
+
+    @staticmethod
+    def define_tasks():
+        """Defines and sequences tasks for CrewAI."""
+        agents = AgentManager.get_agents()
+        
+        first_task = DataCollectionTask(agents[0]).create_task(
+            output_handler=lambda result: TaskManager.create_followup_task(result, agents, 1)
+        )
+        
+        return [first_task]
+
+    @staticmethod
+    def create_followup_task(previous_result, agents, next_agent_index):
+        """Creates the next task in the sequence."""
+        if next_agent_index >= len(agents):
+            return None  # Stop if all agents have completed their tasks
+
+        return DataProcessingTask(agents[next_agent_index], previous_result).create_task(
+            output_handler=lambda result: TaskManager.create_followup_task(result, agents, next_agent_index + 1)
+        )

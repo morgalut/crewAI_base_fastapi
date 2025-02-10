@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from base import Base  # Import Base from base.py
+from crew_ai_project.database.base import Base  # Import Base from base.py
 
 class AgentModel(Base):
     __tablename__ = "agents"

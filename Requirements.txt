@@ -1,0 +1,3 @@
+crewai
+uuid
+pydantic

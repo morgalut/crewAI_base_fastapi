@@ -1,0 +1,14 @@
+{
+    "id": "48bfd2fb-7ed6-46cd-88ec-d2358eea395f",
+    "name": "John Doe",
+    "role": "Operator",
+    "goal": "Monitor IoT devices",
+    "backstory": "A skilled technician monitoring industrial IoT sensors",
+    "tasks": [
+        "Analyze sensor data",
+        "Detect anomalies"
+    ],
+    "restrictions": [
+        "Cannot modify device firmware"
+    ]
+}

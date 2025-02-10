@@ -27,14 +27,7 @@ crewAI_base_fastapi/
 │── README.md            # Project documentation
 ```
 
-## 🚀 Installation & Setup
-### 1️⃣ Clone Repository
-```sh
-git clone https://github.com/morgalut/crewAI_base_fastapi.git
-cd crewAI_base_fastapi
-```
-
-### 2️⃣ Create Virtual Environment
+### Create Virtual Environment
 ```sh
 python -m venv env
 source env/bin/activate  # For macOS/Linux
@@ -73,23 +66,28 @@ uvicorn main:app --reload
 ## 🎯 Example API Usage
 ### Create an Agent with Tasks
 ```sh
-curl -X POST "http://127.0.0.1:8000/agents/" \
--H "Content-Type: application/json" \
--d '{
-    "name": "John Doe",
-    "role": "IoT Security Analyst",
-    "goal": "Detect anomalies in IoT data",
-    "backstory": "Cybersecurity expert specialized in IoT threats.",
-    "tasks": [
-        {"description": "Analyze security logs"},
-        {"description": "Detect unauthorized access"}
-    ]
-}'
+curl -X POST "http://localhost:8000/agents/" \
+     -H "Content-Type: application/json" \
+     --data-raw '{
+        "name": "Researcher",
+        "role": "Data Analyst",
+        "goal": "Analyze IoT event logs",
+        "backstory": "Expert in AI-driven data analysis",
+        "tasks": [
+            {"description": "Collect IoT event logs"},
+            {"description": "Analyze patterns in IoT data"}
+        ],
+        "restrictions": [
+            "Cannot access proprietary datasets",
+            "Limited to publicly available IoT logs"
+        ]
+     }'
 ```
 
-### Run Tasks
+### Get Agenet Tasks
 ```sh
-curl -X POST "http://127.0.0.1:8000/run-tasks/"
+curl -X GET "http://localhost:8000/agents/" \
+     -H "Content-Type: application/json"
 ```
 
 ## 🛠️ Future Improvements

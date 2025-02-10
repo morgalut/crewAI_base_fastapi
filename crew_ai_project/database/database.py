@@ -2,8 +2,7 @@ import time
 import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-from base import Base  # Import Base from base.py
-import models  # Ensure models are imported to register tables
+from crew_ai_project.database.base import Base
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = "postgresql://admin:admin@localhost:5432/crewai"
 
-# Retry logic for database connection
 MAX_RETRIES = 5
 WAIT_TIME = 5  # seconds
 
@@ -23,7 +21,7 @@ def get_engine():
                 logger.info("✅ Successfully connected to the PostgreSQL database!")
             return engine
         except Exception as e:
-            logger.warning(f"⚠️  Database connection failed. Retrying in {WAIT_TIME} seconds... (Attempt {attempt+1}/{MAX_RETRIES})")
+            logger.warning(f"⚠️ Database connection failed. Retrying in {WAIT_TIME} seconds... (Attempt {attempt+1}/{MAX_RETRIES})")
             time.sleep(WAIT_TIME)
     logger.error("❌ Failed to connect to the database after multiple attempts.")
     return None
@@ -31,9 +29,8 @@ def get_engine():
 engine = get_engine()
 if engine:
     Base.metadata.create_all(engine)
-    logger.info("✅ Database tables created and ensured!")
+    logger.info("✅ Database tables created!")
 
-# Create a session factory
 SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
 def get_db():
